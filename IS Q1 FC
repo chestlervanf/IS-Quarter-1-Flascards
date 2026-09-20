@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Integrated Science: Q1 Long Tests 1 and 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E8EBE9;
+    --card: #F6F7F5;
+    --ink: #1D2321;
+    --mute: #5F6864;
+    --rule: #C9D0CC;
+    --accent: #2E4A5A;
+    --ok-bg: #DCE6DA;
+    --ok-ink: #2B4A2F;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121615; --card: #1A1F1D; --ink: #E6EAE7; --mute: #98A19C;
+      --rule: #2E3532; --accent: #8DB1C4; --ok-bg: #223326; --ok-ink: #A9D0AE;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121615; --card: #1A1F1D; --ink: #E6EAE7; --mute: #98A19C;
+    --rule: #2E3532; --accent: #8DB1C4; --ok-bg: #223326; --ok-ink: #A9D0AE;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .app { max-width: 60rem; margin: 0 auto; padding: 1.75rem 1.25rem 2.5rem; }
+
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.75rem 2rem; margin-bottom: 1.5rem; }
+  h1 { font-family: var(--serif); font-weight: 500; font-size: 1.35rem; margin: 0; letter-spacing: -0.005em; }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
+  .filters button {
+    background: none; border: 0; padding: 0.25rem 0; cursor: pointer;
+    color: var(--mute); border-bottom: 2px solid transparent; font-size: 0.9rem;
+  }
+  .filters button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 500; }
+  .filters button:hover { color: var(--ink); }
+
+  .progress { height: 2px; background: var(--rule); margin-bottom: 0.6rem; }
+  .bar { height: 100%; width: 0; background: var(--accent); transition: width 0.2s ease; }
+  .count { font-size: 0.85rem; color: var(--mute); margin-bottom: 0.9rem; font-variant-numeric: tabular-nums; }
+
+  .scene { perspective: 1800px; }
+  .card { cursor: pointer; }
+  .inner { display: grid; transition: transform 0.45s ease; transform-style: preserve-3d; }
+  .card.flipped .inner { transform: rotateY(180deg); }
+  .face {
+    grid-area: 1 / 1;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 0 2.25rem;
+    padding: 2rem 2.25rem 2.25rem;
+    min-height: 26rem;
+  }
+  .back { transform: rotateY(180deg); }
+
+  .rail { border-right: 1px solid var(--rule); padding-right: 1.25rem; font-size: 0.85rem; color: var(--mute); line-height: 1.6; align-self: stretch; }
+  .rail strong { display: block; color: var(--ink); font-weight: 600; font-size: 0.95rem; }
+  .rail span { display: block; }
+
+  .body { min-width: 0; }
+  .q { font-family: var(--serif); font-size: 1.5rem; line-height: 1.38; margin: 0 0 1.5rem; max-width: 42rem; }
+
+  .choices { list-style: none; margin: 0; padding: 0; max-width: 42rem; border-top: 1px solid var(--rule); }
+  .choices li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.5rem; padding: 0.7rem 0; border-bottom: 1px solid var(--rule); }
+  .choices .l { font-weight: 600; color: var(--accent); }
+  .choices .t { min-width: 0; }
+
+  .recap { font-size: 0.9rem; color: var(--mute); margin: 0 0 1.5rem; max-width: 42rem; }
+  .ans-label { font-size: 0.85rem; color: var(--mute); margin: 0 0 0.5rem; }
+  .ans { display: grid; grid-template-columns: 3.25rem 1fr; gap: 0.75rem; align-items: start; background: var(--ok-bg); color: var(--ok-ink); padding: 1.1rem 1.25rem; border-radius: 4px; max-width: 42rem; }
+  .ans .big { font-family: var(--serif); font-size: 2.6rem; line-height: 1; font-weight: 500; }
+  .ans .txt { font-family: var(--serif); font-size: 1.3rem; line-height: 1.4; margin: 0; }
+  .why { margin: 1.5rem 0 0; max-width: 42rem; font-size: 1rem; }
+
+  .controls { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+  .controls button {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 0.6rem 1.25rem; cursor: pointer; min-width: 6rem;
+  }
+  .controls button:hover { border-color: var(--accent); }
+  .controls .flip { background: var(--accent); border-color: var(--accent); color: var(--card); }
+  .hint { color: var(--mute); font-size: 0.85rem; margin: 1rem 0 0; }
+
+  @media (max-width: 680px) {
+    .app { padding: 1.25rem 0.9rem 2rem; }
+    .face { grid-template-columns: 1fr; padding: 1.25rem 1.1rem 1.5rem; min-height: 24rem; }
+    .rail { border-right: 0; border-bottom: 1px solid var(--rule); padding: 0 0 0.75rem; margin-bottom: 1.1rem; display: flex; flex-wrap: wrap; gap: 0 1rem; }
+    .rail strong, .rail span { display: inline; }
+    .q { font-size: 1.25rem; }
+    .ans .big { font-size: 2.1rem; }
+    .ans .txt { font-size: 1.1rem; }
+    .controls button { flex: 1; min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .inner, .bar { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Integrated Science, first quarter long tests</h1>
+    <nav class="filters" aria-label="Choose cards">
+      <button type="button" data-f="all" aria-pressed="true">All 70</button>
+      <button type="button" data-f="1" aria-pressed="false">Long Test 1 (40)</button>
+      <button type="button" data-f="2" aria-pressed="false">Long Test 2 (30)</button>
+      <button type="button" id="shuffle" aria-pressed="false">Shuffle</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+    <div class="count" id="pos" aria-live="polite"></div>
+
+    <div class="scene">
+      <div class="card" id="card" role="button" tabindex="0" aria-label="Flip card">
+        <div class="inner" id="inner">
+          <section class="face front" id="front">
+            <div class="rail" id="railF"></div>
+            <div class="body">
+              <p class="q" id="q"></p>
+              <ol class="choices" id="choices"></ol>
+            </div>
+          </section>
+          <section class="face back" id="back" aria-hidden="true">
+            <div class="rail" id="railB"></div>
+            <div class="body">
+              <p class="recap" id="recap"></p>
+              <p class="ans-label">Correct answer</p>
+              <div class="ans"><span class="big" id="aLetter"></span><p class="txt" id="aText"></p></div>
+              <p class="why" id="why"></p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button type="button" id="prev">Previous</button>
+      <button type="button" id="flip" class="flip">Flip</button>
+      <button type="button" id="next">Next</button>
+    </div>
+    <p class="hint">Click the card or press Space to flip. Left and right arrow keys move between cards.</p>
+  </main>
+</div>
+
+<script>
+// Each item: [competency, question, [A, B, C, D], answer index (0-3), explanation]
+const LT1 = [
+[1,"A learner says, “Science is only a list of facts.” Which statement best describes science?",["Science explains nature.","Science only records facts.","Science only uses laboratory experiments.","Science accepts explanations only when they agree with tradition."],0,"Science is a systematic way of understanding and explaining the natural world."],
+[2,"A barangay uses a flood-warning system based on rainfall records and river measurements. What does this example show?",["Science helps communities.","Science can guide useful technology.","Scientific data replaces community decisions.","Scientific knowledge can guide technologies that always solve community problems."],1,"Data-based science guided the design of a useful technology. C and D overstate."],
+[2,"A school adopts a water-saving device after testing shows that it reduces daily water use. Which analysis is best?",["The device is expensive.","Testing improved the device.","Scientific testing helped a useful technology meet a social need.","Scientific evidence can guide technology, while social needs have no role in choosing it."],2,"Testing (science) validated a technology that addresses a social need."],
+[3,"Students compare an old model of the Solar System with a later model. Which evidence would best show how the scientific idea changed?",["The names are different.","The dates and locations are different.","There are different diagrams and written explanations.","New observations challenged the earlier model and supported a revised explanation of planetary motion."],3,"Ideas change when new observations challenge the old model and support a revision."],
+[3,"Which conclusion best describes what happened as astronomers gathered better observations after Copernicus?",["The models changed.","The old models became useless.","The scientists simply rejected earlier work.","The astronomers replaced every earlier idea with unrelated models."],0,"Models were revised as observations improved; earlier work wasn't simply thrown out."],
+[4,"Which sequence best traces the development of modern cell theory?",["cells, microscopes, theory","microscopes, observations, refined theory","microscopes led to observations but no refined theory","improved instruments but scientists accepted the first explanation without revisions"],1,"Microscopes enabled observations, which led to a refined theory."],
+[4,"A student compares early ideas about atoms with modern atomic science. What pattern is most evident?",["Both began fully formed.","Both relied only on observation.","Both developed as evidence and tools improved.","Both show that scientific knowledge grows only when earlier ideas are discarded completely."],2,"Atomic ideas developed as evidence and tools improved."],
+[5,"A claim is supported by observations, repeated tests, and review by other scientists. Which statement best explains why this claim has strong scientific support?",["Evidence alone proves a claim.","Careful testing alone proves the claim.","Independent review alone proves the claim.","Reliable scientific knowledge is strengthened by evidence, testing, and critical evaluation by other scientists."],3,"Strength comes from evidence, testing, and critical evaluation together, not from any one alone."],
+[5,"A scientist obtains results that do not support the original explanation and changes the explanation. What characteristic is shown?",["openness","careful measurement","preference for new ideas","acceptance of only results that match the original explanation"],0,"Revising an explanation in light of contrary results shows openness."],
+[6,"Two scientists study the same question using different methods. What can make both investigations scientific? Both investigations use…",["identical methods.","suitable methods and evidence.","appropriate methods but do not need critical analysis.","identical methods, regardless of the question being studied."],1,"Methods can differ, but they must be suitable and evidence-based."],
+[6,"A scientific finding becomes more accepted after researchers in different places obtain similar results. What helped strengthen the finding?",["personal agreement","a single repeated result","replication by other researchers","replication by others is unnecessary once researchers agree on the result"],2,"Independent replication strengthens a finding."],
+[7,"Which set names the three major branches of science?",["Physical, Life, and Earth","Physical Science, Life Science, and Space","Physical Science, Earth Science, and Astronomy","Physical Science, Life Science, and Earth Science"],3,"Physical Science, Life Science, and Earth Science."],
+[8,"A student studies why earthquakes occur and how they affect Earth's surface. Which branch is most directly involved?",["Earth Science","Physical Science","Volcanic Science","Space and Astrophysical Science"],0,"Earthquakes and Earth's surface fall under Earth Science."],
+[9,"A health-monitoring device uses electronic sensors and also measures changes in the human body. Why are several scientific fields useful?",["They use one method.","They combine related knowledge.","They provide identical knowledge.","They combine knowledge, but one field can replace all the others in solving the device problem."],1,"Different fields contribute related knowledge; none can replace the others."],
+[10,"A scientist studies a drought by examining rainfall, soil moisture, and plant responses. What does this situation show?",["The fields stay separate.","Some branches of science avoid overlap.","There are several branches of science that can explain one event.","The understanding of drought requires only one scientific branch at a time."],2,"Multiple branches (Earth, Life, Physical) contribute to explaining one event."],
+[11,"A satellite measures atmospheric changes and sends the data to Earth. Which explanation best shows how scientific fields work together?",["Physics builds the sensor but cannot explain signals.","Earth science interprets the atmosphere but not the data.","Physics measures changes while Earth science designs the satellite.","Physics supports the sensor and signal transmission, while Earth science helps explain the atmospheric changes being measured."],3,"Physics handles the sensor and signal; Earth science explains the atmospheric changes."],
+[12,"Which attitude is most clearly shown when a student asks, “Why did this result happen?”",["curiosity","skepticism","open-minded","innovativeness"],0,"Asking why is curiosity."],
+[13,"During an investigation, a student gets an unexpected result. What should the student do first? The student must…",["repeat the test.","review the result and procedure.","change the procedure immediately without checking the result.","discard the result and continue with the original procedure without reviewing the evidence."],1,"Check the result and procedure first, before repeating or changing anything."],
+[14,"Galileo questioned a widely accepted explanation of the heavens. Which pair of attitudes best describes his response?",["curiosity alone","perseverance alone","skepticism and curiosity","skepticism and creativity"],2,"He questioned the accepted view (skepticism) and sought to understand (curiosity)."],
+[15,"Dr. Joel Villasenor is identified as a Pisay alumnus in plasma physics and space science instrumentation. Which contribution is associated with him?",["He developed a vaccine.","He studied rice genetics.","He led climate modeling research.","He developed a soft X-ray camera for the High Energy Transient Explorer mission while he was at MIT."],3,"Soft X-ray camera for the High Energy Transient Explorer (HETE) mission at MIT."],
+[16,"A student thinks a fertilizer works because one plant grew quickly. What should the student do next? The student must…",["test more plants.","stop the observation.","compare one plant with a single untreated plant once.","assume the fertilizer works because one plant grew quickly."],0,"One result isn't enough; test more plants."],
+[17,"Which statement is an observation rather than an inference?",["The beaker is 5 °C.","The water may freeze.","The beaker is cold because it is wet.","The beaker is cold, so the water inside probably came from a freezer."],0,"A direct measurement is an observation; B, C, and D interpret or predict."],
+[17,"A student records, “The plant is 18 cm tall and has five new leaves.” Why is this an observation?",["It has no numbers.","It reports what was measured.","It predicts how the plant will grow.","It explains why the plant changed after the measurements were recorded."],1,"It reports what was measured or seen, with no explanation or prediction."],
+[18,"A wet sidewalk is observed after dark clouds appear. Which statement is an inference?",["The clouds appear.","The sidewalk is wet.","It probably rained recently.","The dark clouds are direct evidence that the sidewalk was caused by rain."],2,"“Probably rained” is a conclusion drawn from observations."],
+[18,"A room measures 20 °C at 8:00 a.m. and 24 °C at 10:00 a.m. Which conclusion is best supported?",["The room cooled.","The temperature stayed the same.","The temperature increased by 2 °C.","The room became warmer during the two-hour period, rising from 20 °C to 24 °C."],3,"The data show a 4 °C rise over two hours."],
+[19,"Students group leaves only by color. Which classification stage are they using?",["single-stage","multiple stage","serial ordering","binary classification using three colors"],0,"One characteristic and one sorting step make it single-stage."],
+[19,"Students first group leaves by shape, then sort each group by edge type. Why is this a multi-stage classification?",["It uses leaves.","It uses two characteristics.","It sorts the leaves only once.","It becomes less specific because another characteristic is added."],1,"Multi-stage classification uses more than one characteristic in successive steps."],
+[20,"A plant grows 2 cm, 4 cm, and 6 cm during three successive weeks. If the pattern continues, what is the best prediction for week 4?",["6 cm","around 7 cm","about 8 cm based on the pattern","about 10 cm if the growth rate increases next week"],2,"The pattern adds 2 cm per week, so week 4 is about 8 cm."],
+[20,"A student predicts tomorrow's temperature from a three-day trend. Which evidence would make the prediction stronger?",["one reading","one additional measurement","several readings with no clear trend","several measurements showing a consistent pattern that can reasonably be used to predict the next value"],3,"More data with a consistent pattern strengthens a prediction."],
+[21,"Which statement gives the correct distinction between a scientific law and a scientific theory?",["Laws describe patterns while theories explain them.","Laws explain patterns while theories merely describe them.","Laws and theories become identical when evidence is strong.","Theories become laws after enough evidence supports their explanations."],0,"Laws describe what happens; theories explain why."],
+[21,"Why does a well-supported scientific theory not become a scientific law?",["They have no evidence.","They serve different scientific roles.","They become identical when evidence is strong.","A theory and a law become interchangeable after repeated experiments support both."],1,"A theory explains and a law describes. They have different roles, so one never becomes the other."],
+[22,"Which statement is a factual claim rather than an opinion?",["Science is difficult.","Newton was brilliant.","Objects fall toward Earth under gravity.","Newton's laws are the most important scientific ideas ever developed."],2,"It can be tested and verified; the others are value judgments."],
+[23,"Which feature most strongly indicates that a claim is pseudoscientific?",["It asks questions.","It changes with evidence.","It uses independent peer review.","It makes claims without reliable evidence, rigorous testing, or independent evaluation."],3,"Pseudoscience lacks reliable evidence, rigorous testing, and independent evaluation."],
+[23,"An online post says that a bracelet cures headaches but gives no data or test results. What should a careful student do first? The student should…",["ignore it.","check the source first.","look for testable evidence.","look for reliable evidence, repeatable testing, and independent evaluation before accepting the claim."],1,"Checking the source is the first step before looking for evidence."],
+[23,"Company A tests its fertilizer only with its own researchers. Company B reports similar results from independent studies. Which evidence is stronger?",["Company A's data","Company B's results","both sets are equally strong","company B's evidence is stronger"],1,"Independent studies are stronger than in-house testing."],
+[23,"An app claims it permanently raises IQ by 30% in one week, but independent studies show mixed results. What is the best evaluation?",["reject this claim","accept the claim","treat it as unproven for now","accept the claim despite inconsistent findings"],2,"Mixed results mean the claim is unproven; withhold acceptance without rejecting it outright."],
+[24,"Which change in scientific thinking was central to the Scientific Revolution?",["more reliance on tradition","less reliance on experiments","fewer direct observations of nature","greater reliance on observation, experimentation, evidence, and systematic ways of studying natural phenomena"],3,"The Scientific Revolution shifted from tradition to observation, experimentation, and evidence."],
+[24,"Which statement correctly describes the role of a scientific law in the example of falling objects?",["A law describes patterns.","A law explains why objects fall.","A theory is a personal belief about falling.","A theory becomes a law when evidence about falling becomes weaker."],0,"A law describes the pattern of how objects fall; a theory explains why."],
+[24,"Which sequence best represents how scientific knowledge can develop?",["observe and explain","observe, test, and revise","observe, explain, test, and revise","observe, explain, test, and then accept the explanation permanently without revision"],2,"This is the most complete cycle. D is wrong because knowledge stays open to revision."],
+[24,"A student says modern science makes earlier scientific ideas useless. Which response is best?",["Old ideas were often wrong.","Modern ideas are always better.","Scientists replace ideas without evidence.","Scientific knowledge often develops cumulatively, with later scientists testing, refining, or replacing earlier explanations."],3,"Science builds on earlier work by testing, refining, or replacing it."]
+];
+
+const LT2 = [
+[1,"During a laboratory investigation, a student wears safety goggles even though the experiment does not involve strong chemicals. What is the main reason for doing so? It is to…",["protect the eyes.","protect the hands.","keep laboratory clothing clean.","reduce the chance that splashes or broken glass can injure the eyes."],0,"Goggles protect the eyes."],
+[1,"A group is preparing a dilute solution that may splash during mixing. One student has goggles and a lab coat but no gloves. What should the student do before beginning the procedure? The student must…",["get gloves.","begin with extra caution.","ask a classmate to stand nearby.","proceed even there is no appropriate gloves for the substance being handled."],0,"Complete PPE must be in place before starting; the missing item is gloves."],
+[1,"Four students are preparing for the same activity. Ana has goggles, gloves, and a lab coat. Ben has goggles and a lab coat but no gloves. Cara has gloves and a lab coat but no goggles. Dan has goggles and gloves but no lab coat. The procedure involves a liquid that may splash and may irritate skin and clothing. Which student's preparation is the most complete?",["Ben, because he wears goggles","Dan, because he wears gloves","Cara, because her hands are protected","Ana, because her eyes, hands, and clothing are all protected"],3,"Only Ana has goggles, gloves, and a lab coat."],
+[1,"A student argues that wearing a lab coat is unnecessary because the experiment uses only a small amount of liquid. Another student says that PPE should still be worn whenever the procedure presents a possible exposure. Which judgment is best supported?",["PPE is optional.","PPE is useful during laboratory work.","PPE should match the hazards present in each activity.","PPE should be selected according to the possible routes of exposure and the risks associated with the entire procedure."],2,"PPE selection depends on the hazards present in each activity."],
+[2,"A bottle in the laboratory is labeled “Corrosive.” What does this warning mainly tell a student?",["It can burn tissue.","It may cause harmful skin reactions.","It can damage skin, eyes, or other body tissues on contact.","It is a substance that can cause serious injury and therefore requires appropriate protective handling and storage."],2,"“Corrosive” warns of tissue damage on contact."],
+[2,"During an activity, a student notices that an unlabeled container contains a clear liquid. The student wants to use it because it looks similar to water. Which reasoning is scientifically safest?",["Do not use it unless authorized.","Ask another student to identify it.","Test a tiny amount before deciding whether it is safe.","Leave it alone and do not bother to ask the teacher to identify and properly label the substance."],0,"Never use an unlabeled substance without authorization; appearance doesn't tell you what it is."],
+[3,"A small amount of an irritating liquid splashes into a student's eyes. What should the student do first? The student must…",["wipe the eyes.","close the eyes tightly.","rinse the eyes at the eyewash station.","immediately use the eyewash station to flush the eyes and avoid notifying the teacher."],2,"Rinse at the eyewash station first. D is wrong because the teacher should be notified."],
+[3,"A fire starts in a laboratory container. The student knows the extinguisher is nearby, but the fire is spreading quickly and smoke is increasing. Which response is most appropriate?",["alert everyone","move farther away first","sound the alarm and follow the laboratory evacuation procedure","raise the alarm, keep others away from the area, and evacuate according to the laboratory's emergency procedure rather than taking unnecessary risks"],3,"Raise the alarm, keep others clear, and evacuate per procedure instead of taking risks with a spreading fire."],
+[4,"Which piece of equipment is mainly used to measure the volume of a liquid more accurately than a beaker?",["balance","thermometer","graduated cylinder","evaporating dish for holding a liquid"],2,"The graduated cylinder is designed for measuring liquid volume."],
+[4,"A student needs to determine whether a liquid is 25 °C or 35 °C. Which equipment should be used?",["balance","thermometer","graduated cylinder for measuring the liquid volume","evaporating dish that can hold the sample while measurements are made"],1,"A thermometer measures temperature."],
+[4,"A group needs to measure 5.0 mL of water, place the water into a test tube, and then heat the sample. Which combination of equipment is most appropriate?",["beaker and ruler","balance and thermometer","graduated cylinder and test-tube holder","graduated cylinder for the liquid volume and a test-tube holder for safe handling during heating"],3,"Graduated cylinder for volume, test-tube holder for safe handling while heating."],
+[5,"Why is a graduated cylinder generally preferred over a beaker when a student needs to measure a specific liquid volume?",["It is taller.","It gives a closer volume measurement.","It is designed for measuring liquid volume more precisely.","It is manufactured specifically to provide more reliable liquid-mass measurements than general-purpose containers such as beakers."],2,"It is designed for more precise liquid-volume measurement."],
+[5,"A student must determine the mass of several small samples before mixing them. Which instrument should be selected?",["balance","thermometer","Erlenmeyer flask","mortar and pestle"],0,"A balance measures mass."],
+[5,"Two groups investigate the same liquid. Group 1 measures its volume with a beaker. Group 2 uses a graduated cylinder. Their measured values differ slightly. Which explanation is most reasonable?",["The tools differ.","The groups probably read different scales.","The graduated cylinder is better suited to measuring liquid volume accurately.","The difference may result because the equipment has different purposes and the graduated cylinder is designed for more precise measurement of mass."],2,"The cylinder is better suited to accurate volume measurement. D is wrong because it measures volume, not mass."],
+[5,"A teacher is selecting equipment for an activity in which students must measure small liquid volumes repeatedly and compare their results. Which choice is best justified?",["vial","beaker","test tube","graduated cylinders"],3,"Repeated, comparable volume measurements call for graduated cylinders."],
+[6,"Why should a student use a test-tube holder when heating a test tube?",["for grip","to keep the tube clean","to reduce direct contact with the heated glass","to provide a safer way to hold the test tube while its contents and glass become cool"],2,"It keeps hands away from hot glass. D is wrong because the glass gets hot, not cool."],
+[6,"A student must heat a liquid in a test tube. Which action is safest?",["point it away","hold it near your face","keep the opening directed away from people","use a pot holder and heat the sample carefully"],2,"Aim the opening away from everyone in case of splattering or boiling over."],
+[6,"A group notices that the glassware they are about to use has a visible crack. One student suggests using it because the crack is small. Another student recommends replacing it. Which reasoning is stronger?",["replace it","use it only briefly","avoid it because damaged glass may break","replace the glassware because heating or handling damaged glass can increase the chance of success"],0,"Cracked glassware should be replaced."],
+[6,"A student uses a beaker to estimate every volume in an investigation even though the procedure requires accurate measurements. The student says this saves time. How should the decision be evaluated?",["It saves effort.","It is acceptable for rough work.","It may be reasonable only when exact volume is not important.","It is a good choice when accuracy affects the investigation because the equipment may not match the precision required by the procedure."],2,"Beaker estimates are only acceptable when exact volume doesn't matter, which isn't the case here."],
+[7,"When reading the volume of water in a graduated cylinder, where should the measurement be taken?",["at the top","at lower level","at bottom level using the upper portion of the meniscus","at eye level by reading the bottom of the meniscus to avoid a misleading view"],3,"Read at eye level, at the bottom of the meniscus, to avoid parallax error."],
+[7,"A student needs to transfer a liquid from a beaker into a narrow test tube without spilling. Which technique is most appropriate?",["pour directly","pour slowly while watching the opening","use a glass stirring rod to guide the liquid into the test tube","use a controlled pour with a wooden stick so the liquid enters the narrow opening safely and steadily"],2,"A glass stirring rod guides the stream into a narrow opening."],
+[7,"Two students transfer the same liquid. Student A pours quickly from a beaker and spills some liquid. Student B pours slowly and guides the stream into the receiving container. What best explains the difference?",["B used control.","A poured too slowly.","B controlled the transfer more carefully.","Student B reduced the chance of spilling by controlling the flow and directing the liquid into the receiving container."],3,"Controlled flow plus guiding the stream reduces spills."],
+[7,"A student must transfer exactly 10.0 mL of liquid for an investigation. The available tools are a beaker, a graduated cylinder, and a medicine cup. Which choice is the most defensible? Use the…",["cup.","beaker for speed.","graduated cylinder because it is intended for measured gas volumes.","graduated cylinder because its markings make it more suitable for obtaining and comparing a specified liquid volume during an experiment."],3,"Its graduated markings suit measuring a specified liquid volume. C is wrong because it is for liquid, not gas, volumes."],
+[8,"What is the main purpose of placing a wire gauze on a tripod during a basic heating setup?",["to support glassware","to increase the flame height","to hold the container above the heat source and spread heat more evenly","to provide a varying platform that holds the container while helping distribute heat across the bottom during heating"],2,"The gauze holds the container above the flame and spreads heat evenly."],
+[8,"A student is assembling a tripod, wire gauze, and burner for heating a small amount of water. Which setup is safest?",["tripod only","tripod with gauze at the base","tripod with gauze centered over the burner","stable tripod with the wire gauze properly positioned so the container is supported securely and centered above the heat source"],3,"A stable tripod, properly positioned gauze, and a container centered over the heat source."],
+[8,"A group notices that their beaker is positioned partly outside the wire gauze. When the burner is lit, the setup begins to wobble. What is the most likely problem?",["poor positioning","flame is too small","container is not centered and supported properly","heating apparatus is unstable because the container was well positioned securely over the supported area of the wire gauze"],2,"The beaker is off-center and not fully supported by the gauze."],
+[8,"Before lighting a burner, a student checks the condition of the glassware, confirms that the apparatus is stable, clears unnecessary materials from the area, and ensures that the heat source is positioned correctly. Why is this preparation important?",["It saves time.","It makes the setup look organized.","It reduces avoidable hazards before heating begins.","It prevents the student to identify and correct unsafe conditions before heat is introduced into the laboratory setup."],2,"Pre-heating checks reduce avoidable hazards."],
+[9,"A student has a mixture of sand and water and wants to separate the solid sand from the liquid. Which method is most appropriate?",["filter it","let it evaporate","use filtration to trap the sand while the water passes through","use filtration because the insoluble sand can be retained by the filter while the liquid passes into another container"],3,"Filtration works because sand is insoluble and is retained by the filter while the liquid passes through."],
+[9,"A mixture contains salt dissolved completely in water. A student places the mixture into a container and uses filter paper, but no salt remains on the filter. What does this result suggest?",["the salt dissolved","the salt passed through","filtration cannot separate dissolved salt from water","filtration cannot retain them as a separate solid phase"],0,"Dissolved salt is no longer a separate solid, so it passes through the filter paper."],
+[9,"A group must separate a mixture containing iron filings, sand, and water. They propose three methods: use a magnet, filter the mixture, and then evaporate the remaining water if needed. Which evaluation is best?",["Use filtration only.","Use evaporation before filtering.","Use the magnet first, then filtration, followed by evaporation when needed.","Use the magnet to replace the iron filings, filtration to mix the sand from the water, and evaporation only if recovering the dissolved water component is necessary."],2,"The magnet removes the iron, filtration removes the sand, and evaporation is used only if needed."]
+];
+
+const ALL = [];
+LT1.forEach((c, i) => ALL.push({ test: 1, item: i + 1, comp: c[0], q: c[1], opts: c[2], ans: c[3], why: c[4] }));
+LT2.forEach((c, i) => ALL.push({ test: 2, item: i + 1, comp: c[0], q: c[1], opts: c[2], ans: c[3], why: c[4] }));
+
+const $ = (id) => document.getElementById(id);
+const card = $('card'), inner = $('inner'), back = $('back');
+const LET = ['A', 'B', 'C', 'D'];
+let filter = 'all', shuffled = false, deck = [], idx = 0;
+
+function buildDeck() {
+  deck = ALL.filter(c => filter === 'all' || String(c.test) === filter);
+  if (shuffled) {
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+  }
+  idx = 0;
+  render();
+}
+
+function rail(el, c) {
+  el.textContent = '';
+  const a = document.createElement('strong'); a.textContent = 'Long Test ' + c.test;
+  const b = document.createElement('span'); b.textContent = 'Item ' + c.item;
+  const d = document.createElement('span'); d.textContent = 'Competency ' + c.comp;
+  el.append(a, b, d);
+}
+
+function render() {
+  const c = deck[idx];
+  inner.style.transition = 'none';
+  card.classList.remove('flipped');
+  back.setAttribute('aria-hidden', 'true');
+  void inner.offsetWidth;
+  inner.style.transition = '';
+
+  rail($('railF'), c); rail($('railB'), c);
+  $('q').textContent = c.q;
+  const ol = $('choices'); ol.textContent = '';
+  c.opts.forEach((t, i) => {
+    const li = document.createElement('li');
+    const l = document.createElement('span'); l.className = 'l'; l.textContent = LET[i];
+    const s = document.createElement('span'); s.className = 't'; s.textContent = t;
+    li.append(l, s); ol.append(li);
+  });
+  $('recap').textContent = c.q;
+  $('aLetter').textContent = LET[c.ans];
+  $('aText').textContent = c.opts[c.ans];
+  $('why').textContent = c.why;
+  $('pos').textContent = 'Card ' + (idx + 1) + ' of ' + deck.length;
+  $('bar').style.width = ((idx + 1) / deck.length * 100) + '%';
+}
+
+function flip() {
+  const on = card.classList.toggle('flipped');
+  back.setAttribute('aria-hidden', on ? 'false' : 'true');
+  $('front').setAttribute('aria-hidden', on ? 'true' : 'false');
+}
+function go(d) { idx = (idx + d + deck.length) % deck.length; render(); $('front').setAttribute('aria-hidden', 'false'); }
+
+card.addEventListener('click', flip);
+$('flip').addEventListener('click', flip);
+$('prev').addEventListener('click', () => go(-1));
+$('next').addEventListener('click', () => go(1));
+
+document.querySelectorAll('.filters button[data-f]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    filter = btn.dataset.f;
+    document.querySelectorAll('.filters button[data-f]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    buildDeck();
+  });
+});
+$('shuffle').addEventListener('click', (e) => {
+  shuffled = !shuffled;
+  e.currentTarget.setAttribute('aria-pressed', String(shuffled));
+  buildDeck();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') { go(1); }
+  else if (e.key === 'ArrowLeft') { go(-1); }
+  else if ((e.key === ' ' || e.key === 'Enter') && (e.target === document.body || e.target === card)) {
+    e.preventDefault(); flip();
+  }
+});
+
+buildDeck();
+</script>
+</body>
+</html>
