@@ -80,6 +80,53 @@
   }
   .back { transform: rotateY(180deg); }
 
+  :root { --bad-bg: #EEDBD6; --bad-ink: #7A2F26; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bad-bg: #3A2421; --bad-ink: #E3ADA4; }
+  }
+  :root[data-theme="dark"] { --bad-bg: #3A2421; --bad-ink: #E3ADA4; }
+
+  [hidden] { display: none !important; }
+  header { margin-bottom: 1rem; }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 2rem; margin-bottom: 1.25rem; }
+  .modes { display: inline-flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  .modes button { background: var(--card); border: 0; padding: 0.45rem 1.1rem; cursor: pointer; color: var(--mute); font-size: 0.9rem; }
+  .modes button + button { border-left: 1px solid var(--rule); }
+  .modes button[aria-pressed="true"] { background: var(--accent); color: var(--card); font-weight: 500; }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 0 2.25rem;
+    padding: 2rem 2.25rem 2.25rem;
+    min-height: 20rem;
+  }
+  .qchoices { display: grid; gap: 0.6rem; max-width: 42rem; }
+  .qchoice {
+    display: grid; grid-template-columns: 2rem 1fr; gap: 0.5rem;
+    text-align: left; width: 100%;
+    background: transparent; border: 1px solid var(--rule); border-radius: 4px;
+    padding: 0.75rem 1rem; cursor: pointer;
+  }
+  .qchoice .l { font-weight: 600; color: var(--accent); }
+  .qchoice:hover { border-color: var(--accent); }
+  .qchoice[aria-disabled="true"] { cursor: default; }
+  .qchoice[aria-disabled="true"]:hover { border-color: var(--rule); }
+  .qchoice.correct { background: var(--ok-bg); color: var(--ok-ink); border-color: var(--ok-ink); }
+  .qchoice.correct .l, .qchoice.wrong .l { color: inherit; }
+  .qchoice.wrong { background: var(--bad-bg); color: var(--bad-ink); border-color: var(--bad-ink); }
+  .feedback { margin-top: 1.25rem; max-width: 42rem; }
+  .verdict { font-weight: 600; margin: 0 0 0.35rem; }
+  .verdict.ok { color: var(--ok-ink); }
+  .verdict.no { color: var(--bad-ink); }
+  .feedback .why { margin: 0; }
+  .results .score { font-family: var(--serif); font-size: 3.25rem; line-height: 1.1; margin: 0 0 0.5rem; }
+  .results .detail { color: var(--mute); margin: 0 0 1.5rem; }
+  .results .controls { margin-top: 0; }
+
   .rail { border-right: 1px solid var(--rule); padding-right: 1.25rem; font-size: 0.85rem; color: var(--mute); line-height: 1.6; align-self: stretch; }
   .rail strong { display: block; color: var(--ink); font-weight: 600; font-size: 0.95rem; }
   .rail span { display: block; }
@@ -113,6 +160,7 @@
     .face { grid-template-columns: 1fr; padding: 1.25rem 1.1rem 1.5rem; min-height: 24rem; }
     .rail { border-right: 0; border-bottom: 1px solid var(--rule); padding: 0 0 0.75rem; margin-bottom: 1.1rem; display: flex; flex-wrap: wrap; gap: 0 1rem; }
     .rail strong, .rail span { display: inline; }
+    .panel { grid-template-columns: 1fr; padding: 1.25rem 1.1rem 1.5rem; min-height: 18rem; }
     .q { font-size: 1.25rem; }
     .ans .big { font-size: 2.1rem; }
     .ans .txt { font-size: 1.1rem; }
@@ -127,19 +175,25 @@
 <div class="app">
   <header>
     <h1>Integrated Science, first quarter long tests</h1>
-    <nav class="filters" aria-label="Choose cards">
+  </header>
+  <div class="toolbar">
+    <div class="modes" role="group" aria-label="Study mode">
+      <button type="button" data-m="cards" aria-pressed="true">Flashcards</button>
+      <button type="button" data-m="quiz" aria-pressed="false">Quiz</button>
+    </div>
+    <nav class="filters" aria-label="Choose questions">
       <button type="button" data-f="all" aria-pressed="true">All 70</button>
       <button type="button" data-f="1" aria-pressed="false">Long Test 1 (40)</button>
       <button type="button" data-f="2" aria-pressed="false">Long Test 2 (30)</button>
       <button type="button" id="shuffle" aria-pressed="false">Shuffle</button>
     </nav>
-  </header>
+  </div>
 
   <main>
     <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
     <div class="count" id="pos" aria-live="polite"></div>
 
-    <div class="scene">
+    <div class="scene" id="scene">
       <div class="card" id="card" role="button" tabindex="0" aria-label="Flip card">
         <div class="inner" id="inner">
           <section class="face front" id="front">
@@ -162,12 +216,45 @@
       </div>
     </div>
 
-    <div class="controls">
+    <div class="controls" id="cardControls">
       <button type="button" id="prev">Previous</button>
       <button type="button" id="flip" class="flip">Flip</button>
       <button type="button" id="next">Next</button>
     </div>
-    <p class="hint">Click the card or press Space to flip. Left and right arrow keys move between cards.</p>
+    <p class="hint" id="cardHint">Click the card or press Space to flip. Left and right arrow keys move between cards.</p>
+
+    <div id="quiz" hidden>
+      <section class="panel">
+        <div class="rail" id="railQ"></div>
+        <div class="body">
+          <p class="q" id="qq"></p>
+          <div class="qchoices" id="qchoices" role="group" aria-label="Answer choices"></div>
+          <div class="feedback" id="feedback" aria-live="polite" hidden>
+            <p class="verdict" id="verdict"></p>
+            <p class="why" id="qwhy"></p>
+          </div>
+        </div>
+      </section>
+      <div class="controls">
+        <button type="button" id="qprev">Previous</button>
+        <button type="button" id="qnext" class="flip">Next</button>
+      </div>
+      <p class="hint">Pick an answer to check it. Keys A to D choose, and the left and right arrow keys move between questions.</p>
+    </div>
+
+    <div id="results" hidden>
+      <section class="panel results">
+        <div class="rail"><strong>Results</strong><span id="rScope"></span></div>
+        <div class="body">
+          <p class="score" id="score"></p>
+          <p class="detail" id="detail"></p>
+          <div class="controls">
+            <button type="button" id="retake" class="flip">Retake quiz</button>
+            <button type="button" id="missed">Review missed</button>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 </div>
 
@@ -257,6 +344,7 @@ const $ = (id) => document.getElementById(id);
 const card = $('card'), inner = $('inner'), back = $('back');
 const LET = ['A', 'B', 'C', 'D'];
 let filter = 'all', shuffled = false, deck = [], idx = 0;
+let mode = 'cards', picks = [], showResults = false;
 
 function buildDeck() {
   deck = ALL.filter(c => filter === 'all' || String(c.test) === filter);
@@ -267,6 +355,8 @@ function buildDeck() {
     }
   }
   idx = 0;
+  picks = new Array(deck.length).fill(null);
+  showResults = false;
   render();
 }
 
@@ -278,7 +368,20 @@ function rail(el, c) {
   el.append(a, b, d);
 }
 
+function applyMode() {
+  const q = mode === 'quiz';
+  $('scene').hidden = q; $('cardControls').hidden = q; $('cardHint').hidden = q;
+  $('quiz').hidden = !q || showResults;
+  $('results').hidden = !q || !showResults;
+  document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === mode)));
+}
+
 function render() {
+  applyMode();
+  if (mode === 'quiz') { renderQuiz(); } else { renderCard(); }
+}
+
+function renderCard() {
   const c = deck[idx];
   inner.style.transition = 'none';
   card.classList.remove('flipped');
@@ -303,6 +406,73 @@ function render() {
   $('bar').style.width = ((idx + 1) / deck.length * 100) + '%';
 }
 
+function score() { return deck.reduce((n, c, i) => n + (picks[i] === c.ans ? 1 : 0), 0); }
+function answered() { return picks.filter(p => p !== null).length; }
+
+function renderQuiz() {
+  if (showResults) { renderResults(); return; }
+  const c = deck[idx], pick = picks[idx];
+  rail($('railQ'), c);
+  $('qq').textContent = c.q;
+  const box = $('qchoices'); box.textContent = '';
+  c.opts.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'qchoice';
+    const l = document.createElement('span'); l.className = 'l'; l.textContent = LET[i];
+    const s = document.createElement('span'); s.className = 't'; s.textContent = t;
+    b.append(l, s);
+    if (pick !== null) {
+      b.setAttribute('aria-disabled', 'true');
+      if (i === c.ans) b.classList.add('correct');
+      else if (i === pick) b.classList.add('wrong');
+    } else {
+      b.addEventListener('click', () => choose(i));
+    }
+    box.append(b);
+  });
+  const fb = $('feedback');
+  fb.hidden = pick === null;
+  if (pick !== null) {
+    const ok = pick === c.ans;
+    const v = $('verdict');
+    v.textContent = ok ? 'Correct.' : 'Not quite. The answer is ' + LET[c.ans] + '.';
+    v.className = 'verdict ' + (ok ? 'ok' : 'no');
+    $('qwhy').textContent = c.why;
+  }
+  $('qnext').textContent = idx === deck.length - 1 ? 'See results' : 'Next';
+  $('pos').textContent = 'Question ' + (idx + 1) + ' of ' + deck.length + '. ' + score() + ' correct out of ' + answered() + ' answered.';
+  $('bar').style.width = ((idx + 1) / deck.length * 100) + '%';
+}
+
+function choose(i) { if (picks[idx] === null) { picks[idx] = i; renderQuiz(); } }
+
+function qgo(d) {
+  if (showResults) return;
+  if (d > 0 && idx === deck.length - 1) { showResults = true; render(); return; }
+  idx = Math.max(0, Math.min(deck.length - 1, idx + d));
+  render();
+}
+
+function renderResults() {
+  const s = score(), n = deck.length, a = answered();
+  $('score').textContent = s + ' of ' + n;
+  $('detail').textContent = Math.round(s / n * 100) + '% correct' + (a < n ? '. ' + (n - a) + ' unanswered.' : '.');
+  $('rScope').textContent = n + ' questions';
+  $('missed').hidden = s === n;
+  $('pos').textContent = 'Quiz complete';
+  $('bar').style.width = '100%';
+}
+
+function restartQuiz() {
+  picks = new Array(deck.length).fill(null);
+  idx = 0; showResults = false; render();
+}
+
+function reviewMissed() {
+  deck = deck.filter((c, i) => picks[i] !== c.ans);
+  restartQuiz();
+}
+
 function flip() {
   const on = card.classList.toggle('flipped');
   back.setAttribute('aria-hidden', on ? 'false' : 'true');
@@ -314,6 +484,11 @@ card.addEventListener('click', flip);
 $('flip').addEventListener('click', flip);
 $('prev').addEventListener('click', () => go(-1));
 $('next').addEventListener('click', () => go(1));
+$('qprev').addEventListener('click', () => qgo(-1));
+$('qnext').addEventListener('click', () => qgo(1));
+$('retake').addEventListener('click', restartQuiz);
+$('missed').addEventListener('click', reviewMissed);
+document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => { mode = b.dataset.m; render(); }));
 
 document.querySelectorAll('.filters button[data-f]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -329,6 +504,14 @@ $('shuffle').addEventListener('click', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
+  if (mode === 'quiz') {
+    if (showResults || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k.length === 1 && 'abcd'.includes(k)) { choose(k.charCodeAt(0) - 97); }
+    else if (e.key === 'ArrowRight') { qgo(1); }
+    else if (e.key === 'ArrowLeft') { qgo(-1); }
+    return;
+  }
   if (e.key === 'ArrowRight') { go(1); }
   else if (e.key === 'ArrowLeft') { go(-1); }
   else if ((e.key === ' ' || e.key === 'Enter') && (e.target === document.body || e.target === card)) {
