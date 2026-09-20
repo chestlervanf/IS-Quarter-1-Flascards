@@ -125,7 +125,30 @@
   .feedback .why { margin: 0; }
   .results .score { font-family: var(--serif); font-size: 3.25rem; line-height: 1.1; margin: 0 0 0.5rem; }
   .results .detail { color: var(--mute); margin: 0 0 1.5rem; }
-  .results .controls { margin-top: 0; }
+  .results .controls { margin-top: 0; flex-wrap: wrap; }
+  .results .rank { margin: -0.75rem 0 1.5rem; }
+
+  .lab { display: block; font-size: 0.85rem; color: var(--mute); margin-bottom: 0.35rem; }
+  .nameinput {
+    width: 100%; max-width: 24rem; padding: 0.7rem 0.85rem;
+    font: inherit; font-size: 1.05rem; color: var(--ink);
+    background: var(--card); border: 1px solid var(--rule); border-radius: 4px;
+  }
+  .err { color: var(--bad-ink); margin: 0.5rem 0 0; font-size: 0.9rem; }
+  .startform .controls { margin-top: 1rem; }
+
+  .scopes { margin-bottom: 1.25rem; }
+  .tablewrap { overflow-x: auto; max-width: 42rem; }
+  .lb { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .lb th { text-align: left; font-weight: 500; font-size: 0.85rem; color: var(--mute); padding: 0 0.75rem 0.5rem 0; border-bottom: 1px solid var(--ink); }
+  .lb td { padding: 0.65rem 0.75rem 0.65rem 0; border-bottom: 1px solid var(--rule); }
+  .lb td.num, .lb th.num { text-align: right; }
+  .lb th:first-child, .lb td:first-child { width: 3.5rem; }
+  .lb tr.me td { background: var(--ok-bg); color: var(--ok-ink); }
+  .lb tr.me td:first-child { padding-left: 0.5rem; }
+  .empty { margin: 0; color: var(--mute); }
+  .linkbtn { background: none; border: 0; padding: 0.25rem 0; margin-top: 0.75rem; color: var(--mute); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: 0.85rem; }
+  .linkbtn:hover { color: var(--ink); }
 
   .rail { border-right: 1px solid var(--rule); padding-right: 1.25rem; font-size: 0.85rem; color: var(--mute); line-height: 1.6; align-self: stretch; }
   .rail strong { display: block; color: var(--ink); font-weight: 600; font-size: 0.95rem; }
@@ -180,8 +203,9 @@
     <div class="modes" role="group" aria-label="Study mode">
       <button type="button" data-m="cards" aria-pressed="true">Flashcards</button>
       <button type="button" data-m="quiz" aria-pressed="false">Quiz</button>
+      <button type="button" data-m="board" aria-pressed="false">Scoreboard</button>
     </div>
-    <nav class="filters" aria-label="Choose questions">
+    <nav class="filters" id="filters" aria-label="Choose questions">
       <button type="button" data-f="all" aria-pressed="true">All 70</button>
       <button type="button" data-f="1" aria-pressed="false">Long Test 1 (40)</button>
       <button type="button" data-f="2" aria-pressed="false">Long Test 2 (30)</button>
@@ -190,7 +214,7 @@
   </div>
 
   <main>
-    <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+    <div class="progress" id="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
     <div class="count" id="pos" aria-live="polite"></div>
 
     <div class="scene" id="scene">
@@ -223,6 +247,24 @@
     </div>
     <p class="hint" id="cardHint">Click the card or press Space to flip. Left and right arrow keys move between cards.</p>
 
+    <div id="start" hidden>
+      <section class="panel">
+        <div class="rail"><strong>Quiz</strong><span id="sScope"></span></div>
+        <div class="body">
+          <p class="q">Enter your name to start.</p>
+          <form class="startform" id="startForm" autocomplete="off">
+            <label class="lab" for="nameInput">Name</label>
+            <input class="nameinput" id="nameInput" type="text" maxlength="40" autocomplete="off" spellcheck="false">
+            <p class="err" id="nameErr" hidden>Enter a name to continue.</p>
+            <div class="controls">
+              <button type="submit" class="flip">Start quiz</button>
+            </div>
+          </form>
+          <p class="hint">Your score is added to the scoreboard when you finish.</p>
+        </div>
+      </section>
+    </div>
+
     <div id="quiz" hidden>
       <section class="panel">
         <div class="rail" id="railQ"></div>
@@ -248,10 +290,35 @@
         <div class="body">
           <p class="score" id="score"></p>
           <p class="detail" id="detail"></p>
+          <p class="detail rank" id="rRank"></p>
           <div class="controls">
             <button type="button" id="retake" class="flip">Retake quiz</button>
             <button type="button" id="missed">Review missed</button>
+            <button type="button" id="toBoard">View scoreboard</button>
+            <button type="button" id="rename">Change name</button>
           </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="board" hidden>
+      <section class="panel">
+        <div class="rail"><strong>Scoreboard</strong><span id="bScope"></span></div>
+        <div class="body">
+          <div class="filters scopes" id="scopes" role="group" aria-label="Scoreboard for">
+            <button type="button" data-s="all" aria-pressed="true">All 70</button>
+            <button type="button" data-s="1" aria-pressed="false">Long Test 1</button>
+            <button type="button" data-s="2" aria-pressed="false">Long Test 2</button>
+          </div>
+          <div class="tablewrap" id="lbTable">
+            <table class="lb">
+              <thead><tr><th>Rank</th><th>Name</th><th class="num">Score</th><th class="num">Percent</th><th class="num">Attempts</th></tr></thead>
+              <tbody id="lbBody"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="lbEmpty" hidden>No scores yet. Finish a quiz and it will appear here.</p>
+          <p class="hint" id="lbNote"></p>
+          <button type="button" id="clearBtn" class="linkbtn">Clear scoreboard</button>
         </div>
       </section>
     </div>
@@ -345,6 +412,23 @@ const card = $('card'), inner = $('inner'), back = $('back');
 const LET = ['A', 'B', 'C', 'D'];
 let filter = 'all', shuffled = false, deck = [], idx = 0;
 let mode = 'cards', picks = [], showResults = false;
+let started = false, reviewMode = false, saved = false, boardScope = 'all', lastKey = '';
+
+// Scoreboard storage: this browser only. Every read/write is guarded because storage can be blocked.
+const SCORE_KEY = 'isq1-scoreboard-v1', NAME_KEY = 'isq1-name-v1';
+function loadJSON(k, fallback) {
+  try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+}
+function saveJSON(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; }
+}
+let scores = loadJSON(SCORE_KEY, []);
+if (!Array.isArray(scores)) scores = [];
+let player = String(loadJSON(NAME_KEY, '') || '');
+let persisted = saveJSON('isq1-probe', 1);
+
+const SCOPE_SHORT = { all: 'All 70', '1': 'Long Test 1', '2': 'Long Test 2' };
+const SCOPE_LONG = { all: 'All 70 questions', '1': 'Long Test 1, 40 questions', '2': 'Long Test 2, 30 questions' };
 
 function buildDeck() {
   deck = ALL.filter(c => filter === 'all' || String(c.test) === filter);
@@ -356,7 +440,7 @@ function buildDeck() {
   }
   idx = 0;
   picks = new Array(deck.length).fill(null);
-  showResults = false;
+  showResults = false; reviewMode = false; saved = false;
   render();
 }
 
@@ -369,16 +453,31 @@ function rail(el, c) {
 }
 
 function applyMode() {
-  const q = mode === 'quiz';
-  $('scene').hidden = q; $('cardControls').hidden = q; $('cardHint').hidden = q;
-  $('quiz').hidden = !q || showResults;
-  $('results').hidden = !q || !showResults;
+  const cards = mode === 'cards', quiz = mode === 'quiz', board = mode === 'board';
+  $('scene').hidden = !cards; $('cardControls').hidden = !cards; $('cardHint').hidden = !cards;
+  $('start').hidden = !(quiz && !started);
+  $('quiz').hidden = !(quiz && started && !showResults);
+  $('results').hidden = !(quiz && started && showResults);
+  $('board').hidden = !board;
+  $('filters').hidden = board;
+  const noProgress = board || (quiz && !started);
+  $('progress').hidden = noProgress; $('pos').hidden = noProgress;
   document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === mode)));
 }
 
 function render() {
   applyMode();
-  if (mode === 'quiz') { renderQuiz(); } else { renderCard(); }
+  if (mode === 'quiz') { if (started) { renderQuiz(); } else { renderStart(); } }
+  else if (mode === 'board') { renderBoard(); }
+  else { renderCard(); }
+}
+
+function cleanName(v) { return String(v || '').replace(/\s+/g, ' ').trim().slice(0, 40); }
+
+function renderStart() {
+  $('sScope').textContent = SCOPE_LONG[filter];
+  $('nameInput').value = player;
+  $('nameErr').hidden = true;
 }
 
 function renderCard() {
@@ -440,7 +539,7 @@ function renderQuiz() {
     $('qwhy').textContent = c.why;
   }
   $('qnext').textContent = idx === deck.length - 1 ? 'See results' : 'Next';
-  $('pos').textContent = 'Question ' + (idx + 1) + ' of ' + deck.length + '. ' + score() + ' correct out of ' + answered() + ' answered.';
+  $('pos').textContent = player + ', question ' + (idx + 1) + ' of ' + deck.length + '. ' + score() + ' correct out of ' + answered() + ' answered.';
   $('bar').style.width = ((idx + 1) / deck.length * 100) + '%';
 }
 
@@ -448,28 +547,81 @@ function choose(i) { if (picks[idx] === null) { picks[idx] = i; renderQuiz(); } 
 
 function qgo(d) {
   if (showResults) return;
-  if (d > 0 && idx === deck.length - 1) { showResults = true; render(); return; }
+  if (d > 0 && idx === deck.length - 1) { showResults = true; finishQuiz(); render(); return; }
   idx = Math.max(0, Math.min(deck.length - 1, idx + d));
   render();
+}
+
+function finishQuiz() {
+  if (reviewMode || saved) return;
+  scores.push({ n: player, s: score(), t: deck.length, sc: filter, d: Date.now() });
+  if (scores.length > 500) scores = scores.slice(-500);
+  persisted = saveJSON(SCORE_KEY, scores);
+  lastKey = player.toLowerCase();
+  saved = true;
+}
+
+// Best attempt per name for one scope, ranked by percent (earlier date breaks ties).
+function boardRows(scope) {
+  const map = new Map();
+  scores.filter(e => e.sc === scope && e.t > 0).forEach(e => {
+    const key = String(e.n).toLowerCase(), frac = e.s / e.t, cur = map.get(key);
+    if (!cur) { map.set(key, { key, name: e.n, s: e.s, t: e.t, best: frac, d: e.d, attempts: 1 }); return; }
+    cur.attempts++;
+    if (frac > cur.best || (frac === cur.best && e.d < cur.d)) {
+      cur.name = e.n; cur.s = e.s; cur.t = e.t; cur.best = frac; cur.d = e.d;
+    }
+  });
+  return [...map.values()].sort((a, b) => b.best - a.best || a.d - b.d);
 }
 
 function renderResults() {
   const s = score(), n = deck.length, a = answered();
   $('score').textContent = s + ' of ' + n;
-  $('detail').textContent = Math.round(s / n * 100) + '% correct' + (a < n ? '. ' + (n - a) + ' unanswered.' : '.');
-  $('rScope').textContent = n + ' questions';
+  $('detail').textContent = player + ': ' + Math.round(s / n * 100) + '% correct' + (a < n ? '. ' + (n - a) + ' unanswered.' : '.');
+  $('rScope').textContent = reviewMode ? 'Missed questions' : SCOPE_LONG[filter];
+  if (reviewMode) {
+    $('rRank').textContent = 'This was a review of missed questions, so it is not added to the scoreboard.';
+  } else {
+    const rows = boardRows(filter), pos = rows.findIndex(r => r.key === player.toLowerCase());
+    $('rRank').textContent = pos >= 0 ? 'Ranked ' + (pos + 1) + ' of ' + rows.length + ' on the ' + SCOPE_SHORT[filter] + ' scoreboard.' : '';
+  }
   $('missed').hidden = s === n;
+  $('retake').textContent = reviewMode ? 'Retake full quiz' : 'Retake quiz';
   $('pos').textContent = 'Quiz complete';
   $('bar').style.width = '100%';
 }
 
+function renderBoard() {
+  document.querySelectorAll('#scopes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === boardScope)));
+  $('bScope').textContent = SCOPE_LONG[boardScope];
+  const rows = boardRows(boardScope), body = $('lbBody');
+  body.textContent = '';
+  rows.slice(0, 25).forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (r.key === lastKey) tr.className = 'me';
+    [i + 1, r.name, r.s + ' / ' + r.t, Math.round(r.best * 100) + '%', r.attempts].forEach((v, j) => {
+      const td = document.createElement('td'); td.textContent = v;
+      if (j > 1) td.className = 'num';
+      tr.append(td);
+    });
+    body.append(tr);
+  });
+  $('lbTable').hidden = rows.length === 0;
+  $('lbEmpty').hidden = rows.length > 0;
+  $('lbNote').textContent = persisted
+    ? 'Scores are saved in this browser on this device only. Other devices keep their own scoreboard.'
+    : 'This browser is not keeping scores between visits, so the scoreboard clears when you close the page.';
+}
+
 function restartQuiz() {
   picks = new Array(deck.length).fill(null);
-  idx = 0; showResults = false; render();
+  idx = 0; showResults = false; saved = false; render();
 }
 
 function reviewMissed() {
   deck = deck.filter((c, i) => picks[i] !== c.ans);
+  reviewMode = true;
   restartQuiz();
 }
 
@@ -486,9 +638,38 @@ $('prev').addEventListener('click', () => go(-1));
 $('next').addEventListener('click', () => go(1));
 $('qprev').addEventListener('click', () => qgo(-1));
 $('qnext').addEventListener('click', () => qgo(1));
-$('retake').addEventListener('click', restartQuiz);
+$('retake').addEventListener('click', () => { if (reviewMode) { buildDeck(); } else { restartQuiz(); } });
 $('missed').addEventListener('click', reviewMissed);
-document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => { mode = b.dataset.m; render(); }));
+$('toBoard').addEventListener('click', () => { boardScope = filter; mode = 'board'; render(); });
+$('rename').addEventListener('click', () => { started = false; render(); $('nameInput').focus(); });
+
+document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.m;
+  if (mode === 'board') boardScope = filter;
+  render();
+  if (mode === 'quiz' && !started) $('nameInput').focus();
+}));
+
+$('startForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = cleanName($('nameInput').value);
+  if (!name) { $('nameErr').hidden = false; $('nameInput').focus(); return; }
+  player = name; saveJSON(NAME_KEY, player);
+  started = true; reviewMode = false;
+  buildDeck();
+});
+
+document.querySelectorAll('#scopes button').forEach(b => b.addEventListener('click', () => { boardScope = b.dataset.s; renderBoard(); document.querySelectorAll('#scopes button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
+
+let clearArmed = false, clearTimer = 0;
+function disarmClear() { clearArmed = false; $('clearBtn').textContent = 'Clear scoreboard'; }
+$('clearBtn').addEventListener('click', () => {
+  if (!clearArmed) {
+    clearArmed = true; $('clearBtn').textContent = 'Tap again to clear all scores on this device';
+    clearTimer = setTimeout(disarmClear, 4000); return;
+  }
+  clearTimeout(clearTimer); scores = []; persisted = saveJSON(SCORE_KEY, scores); lastKey = ''; disarmClear(); renderBoard();
+});
 
 document.querySelectorAll('.filters button[data-f]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -504,8 +685,10 @@ $('shuffle').addEventListener('click', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
+  if (e.target && e.target.tagName === 'INPUT') return;
+  if (mode === 'board') return;
   if (mode === 'quiz') {
-    if (showResults || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!started || showResults || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
     if (k.length === 1 && 'abcd'.includes(k)) { choose(k.charCodeAt(0) - 97); }
     else if (e.key === 'ArrowRight') { qgo(1); }
